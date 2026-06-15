@@ -1,4 +1,4 @@
-require("dotenv").config(); // 👈 PRUEBAS
+// require("dotenv").config(); // 👈 PRUEBAS
 const app = require("./src/app");
 
 const PORT = process.env.PORT || 8080;
