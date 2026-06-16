@@ -1,4 +1,4 @@
-require('dotenv').config(); // primero SIEMPRE
+require('dotenv').config(); // soempre
 
 const app = require('./src/app');
 
