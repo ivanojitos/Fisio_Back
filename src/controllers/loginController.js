@@ -7,6 +7,8 @@ const Administrador = require("../models/administradorModel");
 exports.login = async (req, res) => {
   const { correo, password } = req.body;
 
+  console.log('si entro ');
+  
   if (!correo || !password) {
     return res.status(422).json({
       ok: false,
