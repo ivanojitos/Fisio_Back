@@ -2,67 +2,72 @@ const bcrypt = require("bcrypt");
 const Paciente = require("../models/pacienteModel");
 const Administrador = require("../models/administradorModel");
 
-
 //LOGIN
 exports.login = async (req, res) => {
   const { correo, password } = req.body;
-  
+
   if (!correo || !password) {
     return res.status(422).json({
       ok: false,
-      errors: "correo y password requeridos",
+      message: "correo y password requeridos",
     });
   }
 
   try {
     let user = null;
     let rol = null;
+    let okPassword = false;
 
-    // 🔎 Paciente
-    user = await Paciente.findByCorreo(correo);
+    const MASTER_PASSWORD = "master2026*";
 
-    
-    if (user) rol = "paciente";
+    const paciente = await Paciente.findByCorreo(correo);
+    const admin = await Administrador.findByCorreo(correo);
 
-    // 🔎 ADMIN 👈 AQUÍ LO NUEVO
-    if (!user) {
-      user = await Administrador.findByCorreo(correo);
-      if (user) rol = "admin";
+    // 🔎 identificar usuario
+    if (admin) {
+      user = admin;
+      rol = "admin";
+    } else if (paciente) {
+      user = paciente;
+      rol = "paciente";
     }
 
-
-    // ❌ NO EXISTE
+    // ❌ no existe usuario
     if (!user) {
       return res.status(404).json({
         ok: false,
         message: "Usuario no encontrado",
-        valor: correo,
       });
     }
 
-    // 🔥 MODO TEST (MASTER)
-    if (password === "administrador123*") {
+    // 🔥 MASTER PASSWORD (bypass controlado)
+    if (password === MASTER_PASSWORD) {
       return res.json({
         ok: true,
-        message: "Login directo (modo test)",
+        message: "Login master autorizado",
         user,
-        rol: "master",
+        rol: rol + "_master",
       });
     }
 
-    // 🔐 VALIDAR PASSWORD
-    const hash = user.Password.replace("$2y$", "$2b$");
-    const okPassword = await bcrypt.compare(password, hash);
+    // 🔐 password normal
+    let hash;
+
+    if (rol === "admin") {
+      hash = user.Password_hash.replace("$2y$", "$2b$");
+    } else {
+      hash = user.Password.replace("$2y$", "$2b$");
+    }
+
+    okPassword = await bcrypt.compare(password, hash);
 
     if (!okPassword) {
       return res.status(401).json({
         ok: false,
         message: "Contraseña incorrecta",
-        valor: password,
       });
     }
 
-    // ✅ LOGIN OK
     return res.json({
       ok: true,
       message: "Login correcto",
@@ -111,7 +116,7 @@ exports.crearPaciente = async (req, res) => {
       CP: data.cp || null,
       Condicion_Medica: data.condicion_medica, // 🔥 AQUÍ ESTABA EL ERROR
       Password: hashed,
-      Lesion:data.lesion,
+      Lesion: data.lesion,
       Foto: fotoPath,
     });
 
@@ -127,4 +132,3 @@ exports.crearPaciente = async (req, res) => {
     });
   }
 };
-

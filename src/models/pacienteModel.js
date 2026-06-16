@@ -54,6 +54,23 @@ class Paciente {
 
     return result.recordset[0];
   }
+
+  static async buscarPacientes(search) {
+    const pool = await getPool();
+
+    const result = await pool.request().input("search", `%${search}%`).query(`
+      SELECT TOP 10
+        Id,
+        Nombre
+      FROM Pacientes
+      WHERE Nombre LIKE @search
+      ORDER BY Nombre ASC
+    `);
+
+    return result.recordset;
+  }
+
+
 }
 
 module.exports = Paciente;
