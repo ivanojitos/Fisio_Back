@@ -6,7 +6,7 @@ exports.create = async (req, res) => {
   const data = req.body;
 
   const required = ["paciente_id", "fecha", "hora", "tipo", "notas", "estatus"];
-
+  
   for (let f of required) {
     if (!data[f]) {
       return res.status(422).json({
@@ -42,7 +42,7 @@ exports.create = async (req, res) => {
 exports.index = async (req, res) => {
   try {
     const data = await Citas.getAll();
-
+    
     res.json({
       ok: true,
       data,

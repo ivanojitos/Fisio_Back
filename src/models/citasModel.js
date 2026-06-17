@@ -21,15 +21,17 @@ class Citas {
 
     return result.recordset[0];
   }
-  
+
   // OBTENER TODOS LOS Citas
   static async getAll() {
     const pool = await getPool();
 
     const result = await pool.request().query(`
-      SELECT
-       * 
-      FROM Citas
+      SELECT 
+      c.*,
+      p.nombre AS paciente_nombre
+    FROM Citas c
+    LEFT JOIN Pacientes p ON p.id = c.paciente_id
     `);
 
     return result.recordset;
